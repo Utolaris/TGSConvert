@@ -21,9 +21,18 @@ jobs:
           targets: i686-pc-windows-gnu
 
       - name: Install zig
-        uses: mlugg/setup-zig@v1
-        with:
-          version: 0.16.0
+        shell: bash
+        run: |
+          case "$(uname -m)" in
+            arm64) zarch="aarch64" ;;
+            x86_64) zarch="x86_64" ;;
+            *) echo "unsupported arch: $(uname -m)" >&2; exit 1 ;;
+          esac
+          curl -fsSL -o /tmp/zig.tar.xz "https://ziglang.org/download/0.16.0/zig-macos-${zarch}-0.16.0.tar.xz"
+          mkdir -p /tmp/zig
+          tar -xJf /tmp/zig.tar.xz -C /tmp/zig --strip-components=1
+          echo "/tmp/zig" >> "$GITHUB_PATH"
+          zig version
 
       - name: Install archiver fallback
         run: brew install mingw-w64
