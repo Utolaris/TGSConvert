@@ -22,3 +22,7 @@ tempfile = "3.24"
 [profile.release]
 codegen-units = 1
 lto = "thin"
+
+[patch.crates-io]
+# rlottie 0.5.4 uses unix-only OsStr::as_bytes; patched for Windows x86 builds.
+rlottie = { path = "vendor/rlottie" }

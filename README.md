@@ -38,7 +38,7 @@ cd tgs-webm
 cargo build --release
 ```
 
-Windows x86（32 位）交叉编译，使用 zig 作为 C/C++ 工具链与链接器：
+Windows x86-64（64 位）交叉编译，使用 zig 作为 C/C++ 工具链与链接器：
 
 ```sh
 zig build

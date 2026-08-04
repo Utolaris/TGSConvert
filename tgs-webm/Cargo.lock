@@ -1034,8 +1034,6 @@ dependencies = [
 [[package]]
 name = "rlottie"
 version = "0.5.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74b1485b7d3d35af9d248389250ebd0ab92ee9c989f1bb607d0aae51b1c66f6a"
 dependencies = [
  "rgb",
  "rlottie-sys",

@@ -1,0 +1,25 @@
+# -*- eval: (cargo-minor-mode 1) -*-
+
+[package]
+workspace = ".."
+name = "rlottie"
+version = "0.5.4"
+description = "A platform independent standalone library that plays Lottie Animation"
+include = ["build.rs", "src/**/*.rs", "/LICENSE"]
+
+license.workspace = true
+repository.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[features]
+default = ["vendor-samsung"]
+
+serde = ["dep:serde", "rgb/serde"]
+vendor-samsung = ["rlottie-sys/vendor-samsung"]
+vendor-telegram = ["rlottie-sys/vendor-telegram"]
+
+[dependencies]
+rgb = { version = "0.8.32", default-features = false }
+rlottie-sys = { path = "../rlottie-sys", version = "0.2.12", default-features = false }
+serde = { version = "1", features = ["derive"], optional = true }

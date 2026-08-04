@@ -35,7 +35,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tgs-webm-x86
-          path: tgs-webm/target/i686-pc-windows-gnu/release/tgs-webm.exe
+          path: tgs-webm/target/x86_64-pc-windows-gnu/release/tgs-webm.exe
 
   test-x86:
     name: Test Windows x86 binary on Windows
