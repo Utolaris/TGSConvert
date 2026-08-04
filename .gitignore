@@ -2,6 +2,6 @@
 /target/
 /.zig-cache/
 /zig-out/
-/tgs-webm/target/
+/tgs-convert/target/
 测试*
 /HotCherry-rust-download/

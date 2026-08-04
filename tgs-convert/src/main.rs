@@ -2,14 +2,14 @@ use std::{path::PathBuf, process::ExitCode};
 
 use anyhow::Result;
 use clap::{Args, Parser};
-use tgs_webm::{
+use tgs_convert::{
     ConvertOptions, OutputFormat, convert,
     telegram::{TelegramDownloadOptions, download_sticker_set, parse_sticker_set_name},
 };
 
 #[derive(Debug, Parser)]
 #[command(
-    name = "tgs-webm",
+    name = "tgs-convert",
     version,
     about = "Parallel TGS/Lottie JSON to transparent VP9 WebM converter"
 )]
@@ -70,7 +70,7 @@ struct ConversionArgs {
 
 #[derive(Debug, Parser)]
 #[command(
-    name = "tgs-webm mov",
+    name = "tgs-convert mov",
     version,
     about = "Parallel TGS/Lottie JSON to transparent Apple ProRes 4444 MOV converter"
 )]
@@ -81,7 +81,7 @@ struct MovCli {
 
 #[derive(Debug, Parser)]
 #[command(
-    name = "tgs-webm webp",
+    name = "tgs-convert webp",
     version,
     about = "Parallel TGS/Lottie JSON to transparent animated WebP converter"
 )]
@@ -92,7 +92,7 @@ struct WebpCli {
 
 #[derive(Debug, Parser)]
 #[command(
-    name = "tgs-webm gif",
+    name = "tgs-convert gif",
     version,
     about = "Parallel TGS/Lottie JSON to animated GIF converter using gifski"
 )]
@@ -103,7 +103,7 @@ struct GifCli {
 
 #[derive(Debug, Parser)]
 #[command(
-    name = "tgs-webm telegram-download",
+    name = "tgs-convert telegram-download",
     version,
     about = "Download every sticker or custom emoji from a Telegram pack"
 )]
@@ -150,7 +150,7 @@ fn run() -> Result<()> {
 
 fn run_mov() -> Result<()> {
     let cli = MovCli::parse_from(
-        std::iter::once(std::ffi::OsString::from("tgs-webm mov"))
+        std::iter::once(std::ffi::OsString::from("tgs-convert mov"))
             .chain(std::env::args_os().skip(2)),
     );
     run_conversion(cli.conversion, OutputFormat::MovProres4444)
@@ -158,7 +158,7 @@ fn run_mov() -> Result<()> {
 
 fn run_webp() -> Result<()> {
     let cli = WebpCli::parse_from(
-        std::iter::once(std::ffi::OsString::from("tgs-webm webp"))
+        std::iter::once(std::ffi::OsString::from("tgs-convert webp"))
             .chain(std::env::args_os().skip(2)),
     );
     run_conversion(cli.conversion, OutputFormat::Webp)
@@ -166,7 +166,7 @@ fn run_webp() -> Result<()> {
 
 fn run_gif() -> Result<()> {
     let cli = GifCli::parse_from(
-        std::iter::once(std::ffi::OsString::from("tgs-webm gif"))
+        std::iter::once(std::ffi::OsString::from("tgs-convert gif"))
             .chain(std::env::args_os().skip(2)),
     );
     run_conversion(cli.conversion, OutputFormat::Gif)
@@ -206,7 +206,7 @@ fn run_conversion(cli: ConversionArgs, output_format: OutputFormat) -> Result<()
 
 fn run_telegram_download() -> Result<()> {
     let cli = TelegramDownloadCli::parse_from(
-        std::iter::once(std::ffi::OsString::from("tgs-webm telegram-download"))
+        std::iter::once(std::ffi::OsString::from("tgs-convert telegram-download"))
             .chain(std::env::args_os().skip(2)),
     );
     let set_name = parse_sticker_set_name(&cli.link_or_name)?;

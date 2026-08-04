@@ -65,7 +65,7 @@ pub fn load_animation(input: &Path) -> Result<LoadedAnimation> {
         .filter(|path| !path.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."))
         .to_path_buf();
-    let animation = Animation::from_data(json.clone(), "tgs-webm-inspect", &resource_path)
+    let animation = Animation::from_data(json.clone(), "tgs-convert-inspect", &resource_path)
         .ok_or_else(|| anyhow!("rlottie could not load {}", input.display()))?;
     let size = animation.size();
     let duration_seconds = declared_duration_seconds(&json).unwrap_or_else(|| animation.duration());
@@ -167,7 +167,7 @@ fn render_worker(
     cancel: &AtomicBool,
     progress: &RenderProgress,
 ) -> Result<()> {
-    let cache_key = format!("tgs-webm-{}-{worker_id}", std::process::id());
+    let cache_key = format!("tgs-convert-{}-{worker_id}", std::process::id());
     let mut animation = Animation::from_data(json.to_vec(), cache_key, resource_path)
         .ok_or_else(|| anyhow!("rlottie could not initialize renderer worker {worker_id}"))?;
     let mut surface = Surface::new(Size::new(settings.width, settings.height));

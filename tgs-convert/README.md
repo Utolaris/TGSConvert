@@ -1,6 +1,6 @@
-# tgs-webm
+# tgs-convert
 
-tgs-webm is a standalone Rust CLI for converting Telegram TGS stickers and
+tgs-convert is a standalone Rust CLI for converting Telegram TGS stickers and
 Lottie JSON to transparent VP9 WebM, Apple ProRes 4444 MOV, animated WebP, or
 animated GIF. It replaces the desktop project's TGS-to-WebM chain:
 
@@ -14,7 +14,7 @@ explicit runtime dependency.
 
 ## Build
 
-    cd tgs-webm
+    cd tgs-convert
     cargo build --release
 
 The Telegram rlottie feature vendors the renderer, so a C++ toolchain and CMake
@@ -31,7 +31,7 @@ the worker pool.
 
 ## Usage
 
-    ./target/release/tgs-webm ../测试.tgs \
+    ./target/release/tgs-convert ../测试.tgs \
       --output ../测试-rust.webm \
       --fps 240 \
       --quality 100 \
@@ -62,7 +62,7 @@ Use the mov subcommand for an alpha-preserving Apple ProRes 4444 file. It takes
 the same conversion flags as the default WebM command and defaults to a .mov
 output beside the input:
 
-    ./target/release/tgs-webm mov ../测试.tgs \
+    ./target/release/tgs-convert mov ../测试.tgs \
       --output ../测试-prores4444.mov \
       --fps 240 \
       --quality 100 \
@@ -77,7 +77,7 @@ bitrate limits while the 4444 profile and alpha precision remain fixed.
 
 Use the webp subcommand to produce a lossless looping animated WebP with alpha:
 
-    ./target/release/tgs-webm webp ../测试.tgs \
+    ./target/release/tgs-convert webp ../测试.tgs \
       --output ../测试.webp \
       --fps 60 \
       --quality 100 \
@@ -93,7 +93,7 @@ The Homebrew webp formula provides img2webp.
 
 Use the gif subcommand to encode the same RGBA frame sequence through gifski:
 
-    ./target/release/tgs-webm gif ../测试.tgs \
+    ./target/release/tgs-convert gif ../测试.tgs \
       --output ../测试.gif \
       --fps 50 \
       --quality 100 \
@@ -128,7 +128,7 @@ Ctrl-C also stops the FFmpeg process if encoding has started.
 The CLI can download every file in a Telegram sticker or custom-emoji pack.
 Give it an addstickers or addemoji link (or just the pack name):
 
-    ./target/release/tgs-webm telegram-download \
+    ./target/release/tgs-convert telegram-download \
       https://t.me/addstickers/HotCherry \
       --output-dir ../HotCherry \
       --threads 8

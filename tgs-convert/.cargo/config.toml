@@ -1,8 +1,7 @@
 # rlottie-sys vendors a 32-bit ARM NEON assembly path that does not provide the
 # required symbols on Apple Silicon. The portable C++ fallback is correct, and
 # the CLI still parallelizes frame rendering across independent workers.
-[target.aarch64-apple-darwin.env]
-CXX = "clang++ -DLOTTIE_DISABLE_ARM_NEON"
-
-[target.x86_64-apple-darwin.env]
-CXX = "clang++ -DLOTTIE_DISABLE_ARM_NEON"
+# The Windows x86-64 cross build overrides the compiler through the zig wrapper
+# scripts in build.zig, so this host-side default only affects Apple targets.
+[env]
+CXX = { value = "clang++ -DLOTTIE_DISABLE_ARM_NEON", force = true }

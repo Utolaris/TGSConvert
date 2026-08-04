@@ -6,11 +6,11 @@
 
 - TGS / Lottie JSON / gzip JSON 输入
 - 输出格式：
-  - WebM（VP9 + alpha，`tgs-webm`，默认命令）
-  - MOV（Apple ProRes 4444 + alpha，`tgs-webm mov`）
-  - WebP（动画无损 + alpha，`tgs-webm webp`）
-  - GIF（gifski，仅支持 1/2/4/5/10/20/25/50 FPS，`tgs-webm gif`）
-- Telegram 贴纸包下载（`tgs-webm telegram-download`，支持 `t.me/addstickers` 与 `t.me/addemoji`）
+  - WebM（VP9 + alpha，`tgs-convert`，默认命令）
+  - MOV（Apple ProRes 4444 + alpha，`tgs-convert mov`）
+  - WebP（动画无损 + alpha，`tgs-convert webp`）
+  - GIF（gifski，仅支持 1/2/4/5/10/20/25/50 FPS，`tgs-convert gif`）
+- Telegram 贴纸包下载（`tgs-convert telegram-download`，支持 `t.me/addstickers` 与 `t.me/addemoji`）
 - 并行渲染：多个独立 rlottie worker 分帧渲染，帧序列写入临时目录
 - 参数：`--fps`（GIF 上限 50）、`--quality`、`--width/--height`、`--play-speed`、`--rotation`、`--flip-horizontal/--flip-vertical`、`--threads`、`--ffmpeg`
 
@@ -34,7 +34,7 @@
 macOS 原生：
 
 ```sh
-cd tgs-webm
+cd tgs-convert
 cargo build --release
 ```
 
@@ -42,26 +42,26 @@ Windows x86-64（64 位）交叉编译，使用 zig 作为 C/C++ 工具链与链
 
 ```sh
 zig build
-# 产物：zig-out/bin/tgs-webm.exe
+# 产物：zig-out/bin/tgs-convert.exe
 ```
 
 ## 用法
 
 ```sh
 # TGS -> WebM
-tgs-webm 测试.tgs --output out.webm --fps 60 --quality 100 --threads 8
+tgs-convert 测试.tgs --output out.webm --fps 60 --quality 100 --threads 8
 
 # TGS -> ProRes 4444 MOV
-tgs-webm mov 测试.tgs --output out.mov --fps 240 --quality 100
+tgs-convert mov 测试.tgs --output out.mov --fps 240 --quality 100
 
 # TGS -> WebP
-tgs-webm webp 测试.tgs --output out.webp --fps 60 --quality 100
+tgs-convert webp 测试.tgs --output out.webp --fps 60 --quality 100
 
 # TGS -> GIF（50 FPS 上限，帧延迟为 10ms 整数倍）
-tgs-webm gif 测试.tgs --output out.gif --fps 50 --quality 100
+tgs-convert gif 测试.tgs --output out.gif --fps 50 --quality 100
 
 # 下载完整 Telegram 贴纸包
-tgs-webm telegram-download https://t.me/addstickers/SomePack --output-dir ./packs/SomePack
+tgs-convert telegram-download https://t.me/addstickers/SomePack --output-dir ./packs/SomePack
 ```
 
 ## 说明
@@ -76,4 +76,4 @@ tgs-webm telegram-download https://t.me/addstickers/SomePack --output-dir ./pack
 
 ## 下载
 
-正式版二进制发布在 GitHub Releases：macOS（Apple Silicon）与 Windows x86-64（`tgs-webm.exe`）各一份。
+正式版二进制发布在 GitHub Releases：macOS（Apple Silicon）与 Windows x86-64（`tgs-convert.exe`）各一份。

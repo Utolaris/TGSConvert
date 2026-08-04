@@ -1,5 +1,5 @@
 [package]
-name = "tgs-webm"
+name = "tgs-convert"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"

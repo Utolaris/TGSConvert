@@ -86,7 +86,7 @@ pub fn download_sticker_set(options: &TelegramDownloadOptions) -> Result<Telegra
     })?;
 
     let client = Client::builder()
-        .user_agent("tgs-webm Telegram sticker downloader")
+        .user_agent("tgs-convert Telegram sticker downloader")
         .build()
         .context("failed to create Telegram HTTP client")?;
     let set = get_sticker_set(&client, &requested_name)?;

@@ -1284,7 +1284,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tgs-webm"
+name = "tgs-convert"
 version = "0.1.0"
 dependencies = [
  "anyhow",

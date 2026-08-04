@@ -3,7 +3,7 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const zig_exe = b.graph.zig_exe;
 
-    const win_x86 = b.step("win-x86", "Cross-compile tgs-webm.exe (Windows x86) with zig");
+    const win_x86 = b.step("win-x86", "Cross-compile tgs-convert.exe (Windows x86) with zig");
 
     const toolchain = toolchain_dir();
     const setup = setup_toolchain(b, zig_exe, toolchain);
@@ -13,7 +13,7 @@ pub fn build(b: *std.Build) void {
     const cargo = b.addSystemCommand(&.{
         "cargo", "build", "--target", "x86_64-pc-windows-gnu", "--release",
     });
-    cargo.setCwd(b.path("tgs-webm"));
+    cargo.setCwd(b.path("tgs-convert"));
     cargo.setEnvironmentVariable("CC_x86_64_pc_windows_gnu", b.pathJoin(&.{ toolchain, "cc.sh" }));
     cargo.setEnvironmentVariable("CXX_x86_64_pc_windows_gnu", b.pathJoin(&.{ toolchain, "cxx.sh" }));
     cargo.setEnvironmentVariable("AR_x86_64_pc_windows_gnu", b.pathJoin(&.{ toolchain, "ar.sh" }));
@@ -32,9 +32,9 @@ pub fn build(b: *std.Build) void {
     win_x86.dependOn(&cargo.step);
 
     const install = b.addInstallFileWithDir(
-        b.path("tgs-webm/target/x86_64-pc-windows-gnu/release/tgs-webm.exe"),
+        b.path("tgs-convert/target/x86_64-pc-windows-gnu/release/tgs-convert.exe"),
         .bin,
-        "tgs-webm.exe",
+        "tgs-convert.exe",
     );
     install.step.dependOn(&cargo.step);
     b.getInstallStep().dependOn(&install.step);
@@ -42,19 +42,19 @@ pub fn build(b: *std.Build) void {
 
     const mac = b.step("mac", "Build the native macOS binary");
     const cargo_mac = b.addSystemCommand(&.{ "cargo", "build", "--release" });
-    cargo_mac.setCwd(b.path("tgs-webm"));
+    cargo_mac.setCwd(b.path("tgs-convert"));
     mac.dependOn(&cargo_mac.step);
     const install_mac = b.addInstallFileWithDir(
-        b.path("tgs-webm/target/release/tgs-webm"),
+        b.path("tgs-convert/target/release/tgs-convert"),
         .bin,
-        "tgs-webm",
+        "tgs-convert",
     );
     install_mac.step.dependOn(&cargo_mac.step);
     mac.dependOn(&install_mac.step);
 
     const test_step = b.step("test", "Run cargo tests on the host");
     const cargo_test = b.addSystemCommand(&.{ "cargo", "test" });
-    cargo_test.setCwd(b.path("tgs-webm"));
+    cargo_test.setCwd(b.path("tgs-convert"));
     test_step.dependOn(&cargo_test.step);
 }
 
