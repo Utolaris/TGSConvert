@@ -28,7 +28,7 @@ jobs:
             x86_64) zarch="x86_64" ;;
             *) echo "unsupported arch: $(uname -m)" >&2; exit 1 ;;
           esac
-          curl -fsSL -o /tmp/zig.tar.xz "https://ziglang.org/download/0.16.0/zig-macos-${zarch}-0.16.0.tar.xz"
+          curl -fsSL -o /tmp/zig.tar.xz "https://ziglang.org/download/0.16.0/zig-${zarch}-macos-0.16.0.tar.xz"
           mkdir -p /tmp/zig
           tar -xJf /tmp/zig.tar.xz -C /tmp/zig --strip-components=1
           echo "/tmp/zig" >> "$GITHUB_PATH"
