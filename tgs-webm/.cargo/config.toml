@@ -1,0 +1,8 @@
+# rlottie-sys vendors a 32-bit ARM NEON assembly path that does not provide the
+# required symbols on Apple Silicon. The portable C++ fallback is correct, and
+# the CLI still parallelizes frame rendering across independent workers.
+[target.aarch64-apple-darwin.env]
+CXX = "clang++ -DLOTTIE_DISABLE_ARM_NEON"
+
+[target.x86_64-apple-darwin.env]
+CXX = "clang++ -DLOTTIE_DISABLE_ARM_NEON"

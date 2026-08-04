@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  build-x86:
+    name: Build Windows x86 binary with zig
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: i686-pc-windows-gnu
+
+      - name: Install zig
+        uses: mlugg/setup-zig@v1
+        with:
+          version: 0.16.0
+
+      - name: Install archiver fallback
+        run: brew install mingw-w64
+
+      - name: Cross-compile tgs-webm.exe
+        run: zig build
+
+      - name: Upload x86 binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: tgs-webm-x86
+          path: tgs-webm/target/i686-pc-windows-gnu/release/tgs-webm.exe
+
+  test-x86:
+    name: Test Windows x86 binary on Windows
+    runs-on: windows-latest
+    needs: build-x86
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: tgs-webm-x86
+          path: bin
+
+      - name: Install ffmpeg
+        run: choco install ffmpeg -y --no-progress
+
+      - name: Create test TGS from Lottie fixture
+        shell: pwsh
+        run: |
+          $json = Get-Content -Raw tests/fixtures/sample.lottie.json
+          $stream = [System.IO.MemoryStream]::new()
+          $gzip = [System.IO.Compression.GzipStream]::new($stream, [System.IO.Compression.CompressionMode]::Compress, $true)
+          $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
+          $gzip.Write($bytes, 0, $bytes.Length)
+          $gzip.Dispose()
+          [System.IO.File]::WriteAllBytes("sample.tgs", $stream.ToArray())
+
+      - name: Version check
+        run: .\bin\tgs-webm.exe --version
+
+      - name: Convert TGS to transparent WebM
+        run: .\bin\tgs-webm.exe sample.tgs --output out.webm --fps 5 --quality 100 --threads 2
+
+      - name: Verify WebM output
+        shell: pwsh
+        run: |
+          if (-not (Test-Path out.webm)) { throw "out.webm was not created" }
+          $size = (Get-Item out.webm).Length
+          Write-Host "out.webm size=$size"
+          if ($size -lt 1000) { throw "out.webm too small: $size" }
+
+      - name: Convert TGS to ProRes 4444 MOV
+        run: .\bin\tgs-webm.exe mov sample.tgs --output out.mov --fps 5 --quality 100 --threads 2
+
+      - name: Verify MOV output
+        shell: pwsh
+        run: |
+          if (-not (Test-Path out.mov)) { throw "out.mov was not created" }
+          $size = (Get-Item out.mov).Length
+          Write-Host "out.mov size=$size"
+          if ($size -lt 1000) { throw "out.mov too small: $size" }
