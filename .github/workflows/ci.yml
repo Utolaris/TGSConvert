@@ -32,6 +32,7 @@ jobs:
           mkdir -p /tmp/zig
           tar -xJf /tmp/zig.tar.xz -C /tmp/zig --strip-components=1
           echo "/tmp/zig" >> "$GITHUB_PATH"
+          export PATH="/tmp/zig:$PATH"
           zig version
 
       - name: Install archiver fallback
