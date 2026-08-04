@@ -138,3 +138,9 @@ files concurrently. Files retain their Telegram extension (typically .tgs,
 .webp, or .webm) and use the same unique-ID naming convention as the desktop
 project; custom emoji files are prefixed with their emoji where filesystem-safe.
 When --output-dir is omitted, the set name becomes the output directory.
+
+The bot token is not embedded in the binary. It is read from the macOS
+Keychain (service `TGSConvert`, account `telegram-bot-token`) or from the
+Windows Credential Locker (`Windows.Security.Credentials.PasswordVault`, same
+resource/user names). A one-shot token can be passed on the command line with
+`--token <token>` for a single run.

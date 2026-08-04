@@ -12,7 +12,8 @@ use anyhow::{Context, Result, anyhow, bail};
 use reqwest::blocking::Client;
 use serde::Deserialize;
 
-const TELEGRAM_BOT_TOKEN: &str = "***REMOVED***";
+const TOKEN_SERVICE: &str = "TGSConvert";
+const TOKEN_ACCOUNT: &str = "telegram-bot-token";
 const API_BASE: &str = "https://api.telegram.org";
 
 #[derive(Clone, Debug)]
@@ -20,6 +21,7 @@ pub struct TelegramDownloadOptions {
     pub link_or_name: String,
     pub output_directory: PathBuf,
     pub threads: usize,
+    pub token: String,
 }
 
 #[derive(Clone, Debug)]
@@ -89,7 +91,7 @@ pub fn download_sticker_set(options: &TelegramDownloadOptions) -> Result<Telegra
         .user_agent("tgs-convert Telegram sticker downloader")
         .build()
         .context("failed to create Telegram HTTP client")?;
-    let set = get_sticker_set(&client, &requested_name)?;
+    let set = get_sticker_set(&client, &options.token, &requested_name)?;
     if set.stickers.is_empty() {
         bail!("Telegram sticker set {} is empty", set.name);
     }
@@ -123,6 +125,7 @@ pub fn download_sticker_set(options: &TelegramDownloadOptions) -> Result<Telegra
         for _ in 0..workers {
             let client = client.clone();
             let output_directory = &options.output_directory;
+            let token = &options.token;
             let items = &items;
             let next_index = &next_index;
             let completed = &completed;
@@ -138,7 +141,9 @@ pub fn download_sticker_set(options: &TelegramDownloadOptions) -> Result<Telegra
                         break;
                     }
 
-                    if let Err(error) = download_one(&client, &items[index], output_directory) {
+                    if let Err(error) =
+                        download_one(&client, token, &items[index], output_directory)
+                    {
                         cancel.store(true, Ordering::Release);
                         let mut slot = first_error.lock().expect("download error mutex poisoned");
                         if slot.is_none() {
@@ -173,6 +178,101 @@ pub fn download_sticker_set(options: &TelegramDownloadOptions) -> Result<Telegra
     })
 }
 
+/// Resolves the Telegram bot token used by sticker downloads.
+///
+/// Priority: an explicit `--token` passed for a single run, then the OS
+/// credential store (macOS Keychain, Windows PasswordVault). The token is never
+/// embedded in the binary.
+pub fn resolve_bot_token(cli_token: Option<&str>) -> Result<String> {
+    if let Some(token) = cli_token {
+        let token = token.trim();
+        if !token.is_empty() {
+            return Ok(token.to_owned());
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        return macos_keychain_token();
+    }
+    #[cfg(target_os = "windows")]
+    {
+        return windows_password_vault_token();
+    }
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    {
+        bail!("no --token provided and this platform has no supported credential store");
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn macos_keychain_token() -> Result<String> {
+    let output = std::process::Command::new("security")
+        .args([
+            "find-generic-password",
+            "-s",
+            TOKEN_SERVICE,
+            "-a",
+            TOKEN_ACCOUNT,
+            "-w",
+        ])
+        .output()
+        .context("failed to run security(1); the macOS Keychain is required")?;
+    if !output.status.success() {
+        bail!(
+            "Telegram bot token not found in macOS Keychain (service {TOKEN_SERVICE}, account {TOKEN_ACCOUNT}); \
+             store it with: security add-generic-password -s {TOKEN_SERVICE} -a {TOKEN_ACCOUNT} -w <token>, \
+             or pass --token for a single run"
+        );
+    }
+    let token =
+        String::from_utf8(output.stdout).context("macOS Keychain returned a non-UTF8 token")?;
+    let token = token.trim();
+    if token.is_empty() {
+        bail!("Telegram bot token in macOS Keychain is empty");
+    }
+    Ok(token.to_owned())
+}
+
+#[cfg(target_os = "windows")]
+fn windows_password_vault_token() -> Result<String> {
+    use windows::{Security::Credentials::PasswordVault, core::HSTRING};
+
+    let vault = PasswordVault::new().context("failed to open Windows PasswordVault")?;
+    let resource = HSTRING::from(TOKEN_SERVICE);
+    let credentials = vault
+        .FindAllByResource(&resource)
+        .context("failed to query Windows PasswordVault")?;
+    let iterator = credentials
+        .First()
+        .context("failed to enumerate Windows PasswordVault")?;
+    while iterator
+        .HasCurrent()
+        .context("failed to enumerate Windows PasswordVault")?
+    {
+        let credential = iterator
+            .Current()
+            .context("failed to read Windows PasswordVault credential")?;
+        credential
+            .RetrievePassword()
+            .context("failed to retrieve password from Windows PasswordVault credential")?;
+        let password = credential
+            .Password()
+            .context("failed to read password from Windows PasswordVault credential")?
+            .to_string();
+        if !password.is_empty() {
+            return Ok(password);
+        }
+        iterator
+            .MoveNext()
+            .context("failed to enumerate Windows PasswordVault")?;
+    }
+    bail!(
+        "Telegram bot token not found in Windows Credential Locker (PasswordVault resource {TOKEN_SERVICE}, \
+         user {TOKEN_ACCOUNT}); store it with PowerShell or pass --token for a single run"
+    );
+}
+
 pub fn parse_sticker_set_name(link_or_name: &str) -> Result<String> {
     let trimmed = link_or_name.trim();
     let candidate = if let Some((_, rest)) = trimmed.split_once("://") {
@@ -203,21 +303,26 @@ pub fn parse_sticker_set_name(link_or_name: &str) -> Result<String> {
     Ok(candidate.to_owned())
 }
 
-fn get_sticker_set(client: &Client, name: &str) -> Result<StickerSet> {
-    telegram_api(client, "getStickerSet", [("name", name)])
+fn get_sticker_set(client: &Client, token: &str, name: &str) -> Result<StickerSet> {
+    telegram_api(client, token, "getStickerSet", [("name", name)])
         .with_context(|| format!("failed to fetch Telegram sticker set {name}"))
 }
 
-fn get_file(client: &Client, file_id: &str) -> Result<TelegramFile> {
-    telegram_api(client, "getFile", [("file_id", file_id)])
+fn get_file(client: &Client, token: &str, file_id: &str) -> Result<TelegramFile> {
+    telegram_api(client, token, "getFile", [("file_id", file_id)])
         .context("failed to fetch Telegram file metadata")
 }
 
-fn telegram_api<T>(client: &Client, method: &str, query: [(&str, &str); 1]) -> Result<T>
+fn telegram_api<T>(
+    client: &Client,
+    token: &str,
+    method: &str,
+    query: [(&str, &str); 1],
+) -> Result<T>
 where
     T: for<'de> Deserialize<'de>,
 {
-    let url = format!("{API_BASE}/bot{TELEGRAM_BOT_TOKEN}/{method}");
+    let url = format!("{API_BASE}/bot{token}/{method}");
     let response = client
         .get(url)
         .query(&query)
@@ -241,17 +346,19 @@ where
         .ok_or_else(|| anyhow!("Telegram API request {method} returned no result"))
 }
 
-fn download_one(client: &Client, item: &DownloadItem, output_directory: &Path) -> Result<()> {
-    let metadata = get_file(client, &item.file_id)?;
+fn download_one(
+    client: &Client,
+    token: &str,
+    item: &DownloadItem,
+    output_directory: &Path,
+) -> Result<()> {
+    let metadata = get_file(client, token, &item.file_id)?;
     let extension =
         extension_from_path(&metadata.file_path).unwrap_or_else(|| fallback_extension(item));
     let filename = filename(item, extension);
     let destination = output_directory.join(filename);
     let partial_destination = destination.with_extension(format!("{extension}.part"));
-    let url = format!(
-        "{API_BASE}/file/bot{TELEGRAM_BOT_TOKEN}/{}",
-        metadata.file_path
-    );
+    let url = format!("{API_BASE}/file/bot{token}/{}", metadata.file_path);
 
     let mut response = client
         .get(url)

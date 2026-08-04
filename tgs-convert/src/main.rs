@@ -4,7 +4,9 @@ use anyhow::Result;
 use clap::{Args, Parser};
 use tgs_convert::{
     ConvertOptions, OutputFormat, convert,
-    telegram::{TelegramDownloadOptions, download_sticker_set, parse_sticker_set_name},
+    telegram::{
+        TelegramDownloadOptions, download_sticker_set, parse_sticker_set_name, resolve_bot_token,
+    },
 };
 
 #[derive(Debug, Parser)]
@@ -118,6 +120,11 @@ struct TelegramDownloadCli {
     /// Concurrent metadata and file-download workers.
     #[arg(long, default_value_t = default_threads())]
     threads: usize,
+
+    /// Temporary Telegram bot token for this run only; overrides the OS
+    /// credential store (macOS Keychain / Windows PasswordVault).
+    #[arg(long)]
+    token: Option<String>,
 }
 
 fn main() -> ExitCode {
@@ -210,6 +217,7 @@ fn run_telegram_download() -> Result<()> {
             .chain(std::env::args_os().skip(2)),
     );
     let set_name = parse_sticker_set_name(&cli.link_or_name)?;
+    let token = resolve_bot_token(cli.token.as_deref())?;
     let output_directory = cli
         .output_directory
         .unwrap_or_else(|| PathBuf::from(&set_name));
@@ -217,6 +225,7 @@ fn run_telegram_download() -> Result<()> {
         link_or_name: cli.link_or_name,
         output_directory,
         threads: cli.threads,
+        token,
     })?;
     println!(
         "Downloaded {} sticker(s) from {} ({}) to {}",

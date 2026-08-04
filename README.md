@@ -68,7 +68,13 @@ tgs-convert telegram-download https://t.me/addstickers/SomePack --output-dir ./p
 
 - WebP 计时按帧显式写入毫秒延迟（60 FPS 使用 16/17/17ms 循环，总时长精确），不复用原 C# 项目的错误计时器。
 - GIF 帧延迟以 10ms 为单位，因此帧率被限制在 50 FPS 以内且必须能整除 1000ms。
-- Telegram bot token 已按需求硬编码进二进制。
+- Telegram bot token 不再内嵌进二进制，改从操作系统凭据库读取：
+  - macOS：系统钥匙串（Keychain）。存入方式：
+    `security add-generic-password -s TGSConvert -a telegram-bot-token -w '<token>'`
+  - Windows：Windows Credential Locker
+    （`Windows.Security.Credentials.PasswordVault`，资源名 `TGSConvert`，
+    用户名 `telegram-bot-token`）。
+  - 临时单次使用：`tgs-convert telegram-download <链接> --token '<token>'`。
 
 ## CI
 
