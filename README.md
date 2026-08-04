@@ -73,3 +73,7 @@ tgs-webm telegram-download https://t.me/addstickers/SomePack --output-dir ./pack
 ## CI
 
 `.github/workflows/ci.yml` 在 macOS runner 上用 zig 交叉编译 x86 二进制，并在 Windows runner 上安装 FFmpeg 后实际执行转换验证。
+
+## 下载
+
+正式版二进制发布在 GitHub Releases：macOS（Apple Silicon）与 Windows x86-64（`tgs-webm.exe`）各一份。
