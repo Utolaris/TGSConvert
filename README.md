@@ -70,10 +70,10 @@ tgs-convert telegram-download https://t.me/addstickers/SomePack --output-dir ./p
 - GIF 帧延迟以 10ms 为单位，因此帧率被限制在 50 FPS 以内且必须能整除 1000ms。
 - Telegram bot token 不再内嵌进二进制，改从操作系统凭据库读取：
   - macOS：系统钥匙串（Keychain）。存入方式：
-    `security add-generic-password -s TGSConvert -a telegram-bot-token -w '<token>'`
+    `security add-generic-password -s TGSConvert -a tgs-convert -w '<token>'`
   - Windows：Windows Credential Locker
     （`Windows.Security.Credentials.PasswordVault`，资源名 `TGSConvert`，
-    用户名 `telegram-bot-token`）。
+    用户名 `tgs-convert`）。
   - 临时单次使用：`tgs-convert telegram-download <链接> --token '<token>'`。
 
 ## CI

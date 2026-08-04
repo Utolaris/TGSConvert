@@ -13,7 +13,7 @@ use reqwest::blocking::Client;
 use serde::Deserialize;
 
 const TOKEN_SERVICE: &str = "TGSConvert";
-const TOKEN_ACCOUNT: &str = "telegram-bot-token";
+const TOKEN_ACCOUNT: &str = "tgs-convert";
 const API_BASE: &str = "https://api.telegram.org";
 
 #[derive(Clone, Debug)]
