@@ -193,11 +193,11 @@ pub fn resolve_bot_token(cli_token: Option<&str>) -> Result<String> {
 
     #[cfg(target_os = "macos")]
     {
-        return macos_keychain_token();
+        macos_keychain_token()
     }
     #[cfg(target_os = "windows")]
     {
-        return windows_password_vault_token();
+        windows_password_vault_token()
     }
     #[cfg(not(any(target_os = "macos", target_os = "windows")))]
     {

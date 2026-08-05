@@ -65,7 +65,7 @@ struct ConversionArgs {
     #[arg(long, default_value_t = default_threads())]
     threads: usize,
 
-    /// FFmpeg executable path or command name.
+    /// FFmpeg executable path or command name (used by WebM and MOV output).
     #[arg(long, default_value = "ffmpeg")]
     ffmpeg: PathBuf,
 }

@@ -76,6 +76,9 @@ impl ConvertOptions {
         if self.width == Some(0) || self.height == Some(0) {
             bail!("--width and --height must be positive when set");
         }
+        if self.output == self.input {
+            bail!("--output must not overwrite the input file");
+        }
         if self.threads == 0 {
             bail!("--threads must be at least 1");
         }
